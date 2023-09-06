@@ -4,7 +4,11 @@ xmlns:w="urn:schemas-microsoft-com:office:word"
 xmlns:dt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882"
 xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
 xmlns="http://www.w3.org/TR/REC-html40">
-
+	function turkce($metin){
+   $aranan=array("ç","Ç","ğ","Ğ","ı","İ","ö","Ö","ş","Ş","ü","Ü"," ");
+   $yerine=array("c","c","g","g","i","i","o","o","s","s","u","u","_");
+   return str_replace($aranan,$yerine,$metin);
+	}
 <head>
 <meta name="Microsoft Theme 2.00" content="tidepool 011">
 <meta http-equiv=Content-Type content="text/html; charset=Windows-1254">
