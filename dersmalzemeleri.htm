@@ -1,3 +1,20 @@
+slugify = function(text) {
+    var trMap = {
+        'çÇ':'c',
+        'ğĞ':'g',
+        'şŞ':'s',
+        'üÜ':'u',
+        'ıİ':'i',
+        'öÖ':'o'
+    };
+    for(var key in trMap) {
+        text = text.replace(new RegExp('['+key+']','g'), trMap[key]);
+    }
+    return  text.replace(/[^-a-zA-Z0-9\s]+/ig, '') // remove non-alphanumeric chars
+                .replace(/\s/gi, "-") // convert spaces to dashes
+                .replace(/[-]+/gi, "-") // trim repeated dashes
+                .toLowerCase();
+
 <html xmlns:v="urn:schemas-microsoft-com:vml"
 xmlns:o="urn:schemas-microsoft-com:office:office"
 xmlns:w="urn:schemas-microsoft-com:office:word"
@@ -1016,31 +1033,6 @@ href="index.html"><span class=SpellE>Anasayfa</span></a><o:p></o:p></span></b></
 
 <p class=MsoNormal><span style='color:windowtext'><o:p>&nbsp;</o:p></span></p>
 
-/**
- * Metni url'de kullanılabilir hale çevirir. Boşluklar tireye çevrilir, 
- * alfanumerik olmayan katakterler silinir.
- * 
- * Transform text into a URL path slug(with Turkish support). 
- * Spaces turned into dashes, remove non alnum
- * 
- * @param string text
- */
-slugify = function(text) {
-    var trMap = {
-        'çÇ':'c',
-        'ğĞ':'g',
-        'şŞ':'s',
-        'üÜ':'u',
-        'ıİ':'i',
-        'öÖ':'o'
-    };
-    for(var key in trMap) {
-        text = text.replace(new RegExp('['+key+']','g'), trMap[key]);
-    }
-    return  text.replace(/[^-a-zA-Z0-9\s]+/ig, '') // remove non-alphanumeric chars
-                .replace(/\s/gi, "-") // convert spaces to dashes
-                .replace(/[-]+/gi, "-") // trim repeated dashes
-                .toLowerCase();
 </div>
 
 </body>
