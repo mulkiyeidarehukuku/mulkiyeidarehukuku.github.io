@@ -1,148 +1,3 @@
-<?php
-
-function array_make_first(&$array, $element) {
-    if (($ndx = array_search($element, $array)) !== false) {
-        unset($array[$ndx]);
-        array_unshift($array, $element);
-    }
-}
-
-$encler = mb_list_encodings();
-natcasesort($encler);
-array_make_first($encler, 'ISO-8859-9');
-array_make_first($encler, 'UTF-8');
-$varsayilanEncIn = 'iso-8859-9';
-$varsayilanEncOut = 'utf-8';
-
-if (isset($_FILES['dosya']) && $_FILES['dosya']['error'] == UPLOAD_ERR_OK && isset($_GET['y'])) {
-    $icerik = file_get_contents($_FILES['dosya']['tmp_name']);
-	if (isset($_POST['enc_in']) && $_POST['enc_in'] != '' && $_POST['enc_in'] != '__auto' && in_array($_POST['enc_in'], $encler)) {
-		$enc = $_POST['enc_in'];
-	} else {
-	    $autoenc = $enc = mb_detect_encoding($icerik, 'utf-8, iso-8859-9', true);
-	}
-    if (strtolower($enc) != 'utf-8') {
-        echo $enc;
-        $icerik = mb_convert_encoding($icerik, 'utf-8', $enc);
-    }
-    $icerik = strtr($icerik, array(
-		'â€¢' => '•',
-		'â€œ' => '“',
-		'â€' => '”',
-		'â€˜' => '‘',
-		'â€™' => '’',
-		'Ý¾' => 'İ',
-		'Ý' => 'İ',
-		'Ä°' => 'İ',
-		'Ã' => 'İ',
-		'â€¹' => 'İ',
-		'&Yacute;' => 'İ',
-		'ý' => 'ı',
-		'Ä±' => 'ı',
-		'Â±' => 'ı',
-		'Ã½' => 'ı',
-		'Ã›' => 'ı',
-		'â€º' => 'ı',
-		'&yacute;' => 'ı',
-		'Þ' => 'Ş',
-		'Åž' => 'Ş',
-		'Ã…Å¸' => 'Ş',
-		'Ã¥Ã¿' => 'Ş',
-		'&THORN;' => 'Ş',
-		'þ' => 'ş',
-		'Å?' => 'ş',
-		'ÅŸ' => 'ş',
-		'&thorn;' => 'ş',
-		'Ð' => 'Ğ',
-		'Äž' => 'Ğ',
-		'ð' => 'ğ',
-		'Ä?' => 'ğ',
-		'ÄŸ' => 'ğ',
-		'&eth;' => 'ğ',
-		'Ã‡' => 'Ç',
-		'Ã?' => 'Ç',
-		'&Ccedil;' => 'Ç',
-        'Ã§' => 'ç',
-		'&ccedil;' => 'ç',
-		'Ã–' => 'Ö',
-		'&Ouml;' => 'Ö',
-		'Ã¶' => 'ö',
-		'&ouml;' => 'ö',
-		'Ãœ' => 'Ü',
-		'&Uuml;' => 'Ü',
-		'ÃƒÂ¼' => 'ü',
-		'Ã£Â¼' => 'ü',
-		'Ã¼' => 'ü',
-        '&uuml;' => 'ü',
-	));
-	
-	if (isset($_POST['enc_out']) && $_POST['enc_out'] != '' && in_array($_POST['enc_out'], $encler)) {
-		$icerik = mb_convert_encoding($icerik, $_POST['enc_out'], 'utf-8');
-	}
-	
-	if ($_POST['tip'] == '2') {
-		$lastDot = strrpos($_FILES['dosya']['name'], '.');
-		if ($lastDot === false) {
-			$ad = $_FILES['dosya']['name'].'_duzeltilmis';
-		} else {
-			$ad = substr($_FILES['dosya']['name'], 0, $lastDot).'_duzeltilmis'.substr($_FILES['dosya']['name'], $lastDot);
-		}
-		header("Content-Disposition: attachment; filename=\"".basename($ad)."\";" );
-		echo $icerik;
-		exit;
-	}
-}
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <style type="text/css">
-		h1 a, h1 a:visited{color:#09F;text-decoration:none;}
-		h1 a:hover{text-decoration:underline;}
-	</style>
-	<title>Bozuk Türkçe Karakterli Dosya Düzelt</title>
-</head>
-<body>
-    <h1><a href=".">Bozuk Türkçe Karakterli Dosya Düzelt (.sql, .html, ...)</a></h1>
-    <form action="?y=1" method="post" enctype="multipart/form-data">
-        <input type="file" name="dosya" /> &nbsp; &nbsp; 
-        <select name="tip">
-            <option value="1">Ekranda Göster</option>
-            <option value="2">Farklı Kaydet</option>
-        </select>
-         &nbsp; &nbsp; 
-        <label for="enc_in">Kodlama</label> <select id="enc_in" name="enc_in">
-        <option value="__auto">Otomatik tespit et</option>
-        <?php foreach ($encler as $v) { ?>
-        	<option value="<?php echo htmlspecialchars($v)?>"<?php echo ((@$_POST['enc_in']==$v/*||$varsayilanEncIn==strtolower($v)*/)?' selected="selected"':''); ?>><?php echo htmlspecialchars($v)?></option>
-        <?php } ?>
-        </select>
-         &nbsp; &nbsp; 
-        <label for="enc_out">Çıktı Kodlaması</label> <select id="enc_out" name="enc_out">
-        <?php foreach ($encler as $v) { ?>
-        	<option value="<?php echo htmlspecialchars($v)?>"<?php echo ((@$_POST['enc_out']==$v||$varsayilanEncOut==strtolower($v))?' selected="selected"':''); ?>><?php echo htmlspecialchars($v)?></option>
-        <?php } ?>
-        </select>
-         &nbsp; &nbsp; 
-        <input type="submit" value="Yükle">
-    </form>
-    <?if ($icerik){ ?>
-   		<br />
-   		<?php if (isset($autoenc)) echo 'Tespit edilen girdi kodlaması: '.$autoenc.'<br />' ?>
-        Sonuç :<br />
-        <textarea cols="" rows="" readonly="readonly" wrap="off" style="width: 100%; height: 600px; font-family:monospace;white-space: pre;background:#fffff6"><?php echo htmlspecialchars(@$icerik); ?></textarea>
-    <?} ?>
-</body>
-</html>
-
-
-
-
-
-
-
-
 <html xmlns:v="urn:schemas-microsoft-com:vml"
 xmlns:o="urn:schemas-microsoft-com:office:office"
 xmlns:w="urn:schemas-microsoft-com:office:word"
@@ -1161,6 +1016,135 @@ href="index.html"><span class=SpellE>Anasayfa</span></a><o:p></o:p></span></b></
 
 <p class=MsoNormal><span style='color:windowtext'><o:p>&nbsp;</o:p></span></p>
 
+
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+import os
+
+dir = sys.argv[1]
+
+logfile = open("renamefile.log", "w")
+
+turkish_chars_then = ["√∂", "ƒ±", "√ß", "≈ü", "ƒü", "√º",
+                      "√ñ", "ƒ∞", "Ç", "≈û", "√ö", "√ú", "√ª", "√¢", "√Æ"]
+turkish_chars = ['ö',  'ı', 'ç', 'ş', 'ğ', 'ü', 'Ö',
+                 'İ', 'Ç', 'Ş', 'Ğ', 'Ü', 'û', 'a', "i"]
+turkish_chars_code = [154,  221, 141, 223, 219, 159,
+                      133, 220, 130, 222, 218, 134, 251, 97,  105]
+eng_chars = ['o',  'i', 'c', 's', 'g', 'u', 'O',
+             'I', 'C', 'S', 'G', 'U', 'u', 'a', "i"]
+eng_chars_code = [111,  105,  99, 115, 103, 117,
+                  79,  73,  67,  83,  71,  85, 117, 97,  105]
+
+weirdcharsselfs = ["ƒ", "±", "√", '∂', 'ß', '≈', 'ü',
+                   'º', 'ñ', '∞', 'á', 'û', 'ö', 'ú', 'ª', '¢', 'Æ']
+weirdcharscodes = [196, 177, 195, 182, 167, 197, 159,
+                   188, 150, 176, 135, 158, 154, 156, 187, 162, 198]
+weirdchar_patterns = [[195, 182], [196, 177], [195, 167], [197, 159], [196, 159], [195, 188], [195, 150], [
+    196, 176], [195, 135], [197, 158], [195, 154], [195, 156], [195, 187], [195, 162], [195, 198]]
+
+
+def prnt_ascii_values():
+    for i in range(256):
+        print(chr(i) + " > " + str(i))
+
+
+def isWeirdChar(c):
+    for weirdcharcode in weirdcharscodes:
+        if(ord(c) == weirdcharcode):
+            return True
+    return False
+
+
+def isTurkishChar(c):
+    idx = -1
+    for c in turkish:
+        if(ord(c) == weirdcharcode):
+            return idx
+        idx = idx + 1
+    return idx
+
+
+def rename(name, convert_name, root):
+    '''This function makes renaming with proper logs  '''
+    logfile.write("\n renaming file : " + name + "   to : " + convert_name)
+    src = os.path.join(root, name)
+    dst = os.path.join(root, convert_name)
+    logfile.write("\n rename source : " + src)
+    logfile.write("\n rename destination : " + dst)
+    try:
+        os.rename(src, dst)
+    except Exception:
+        print("os rename error for : " + src)
+        logfile.write("----> fail rename source : " + src)
+
+
+def weirdCharPatternMatch(check):
+    idx = 0
+    for wc_pattern in weirdchar_patterns:
+        if(check == wc_pattern):
+            return idx
+        idx = idx + 1
+    return -1
+
+
+def convertWeirdCharsToIngChars(name):
+    resname = str("")
+    prev_weird_char = " "
+    cur_weird_char = " "
+    for c in name:
+        if(isWeirdChar(c)):
+            prev_weird_char = cur_weird_char
+            cur_weird_char = c
+            res = weirdCharPatternMatch(
+                [ord(prev_weird_char), ord(cur_weird_char)])
+            if(res != -1):
+                resname += chr(eng_chars_code[res])
+        else:
+            resname += c
+    return resname
+
+
+def convertTurkishCharsToIngChars(name):
+    resname = str("")
+    for c in name:
+        res = isTurkishChar(c)
+        if(res != -1):
+            resname += chr(eng_chars_code[res])
+        else:
+            resname += c
+    return resname
+
+
+def convertTurkishCharsInDir():
+    for root, dirs, files in os.walk(toconv):
+        for name in files:
+            newname = convertTurkishCharsToIngChars(name)
+            if(name != newname):
+                rename(name, newname, root)
+        for dname in dirs:
+            newname = convertTurkishCharsToIngChars(dname)
+            if(dname != newname):
+                rename(dname, newname, root)
+
+
+def convertWeirdCharsInDir(toconv):
+    for root, dirs, files in os.walk(toconv):
+        for name in files:
+            newname = convertWeirdCharsToIngChars(name)
+            if(name != newname):
+                rename(name, newname, root)
+        for dname in dirs:
+            newname = convertWeirdCharsToIngChars(dname)
+            if(dname != newname):
+                rename(dname, newname, root)
+
+
+convertWeirdCharsInDir(dir)
+logfile.close
+	
 </div>
 
 </body>
